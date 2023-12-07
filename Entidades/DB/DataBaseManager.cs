@@ -14,7 +14,8 @@ namespace Entidades.DataBase
 
         static DataBaseManager()
         {
-            DataBaseManager.stringConnection = "Server = DESKTOP-NP3CB0L\\MSSQLSERVER777; Database = 20230622SP; Trusted_Connection = True";
+            //Modificar el nombre del server
+            DataBaseManager.stringConnection = "Server = .; Database = 20230622SP; Trusted_Connection = True";
         }
 
         public static string GetImagenComida(string tipo)
