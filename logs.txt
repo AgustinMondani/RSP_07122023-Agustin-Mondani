@@ -1,0 +1,8 @@
+Error al leer de la base de datos
+Error ruta
+Error ruta
+Error ruta
+Error ruta
+Error ruta
+Error ruta
+Error ruta
