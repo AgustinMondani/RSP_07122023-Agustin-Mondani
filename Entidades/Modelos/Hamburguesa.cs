@@ -63,7 +63,7 @@ namespace Entidades.Modelos
         {
             if (!this.estado)
             {
-                int randomNum = random.Next(1, 9);
+                int randomNum = random.Next(1, 9);// ya esta instanciado en el constructor
                 imagen = DataBaseManager.GetImagenComida($"Hamburguesa_{randomNum}");
                 AgregarIngredientes();
             }
