@@ -8,17 +8,17 @@ namespace FrmView
 {
     public partial class FrmView : Form
     {
-        private Queue<IComestible> comidas;
+        private IComestible comida;
         Cocinero<Hamburguesa> hamburguesero;
 
         public FrmView()
         {
             InitializeComponent();
-            this.comidas = new Queue<IComestible>();
+            this.comida = new Hamburguesa();
             this.hamburguesero = new Cocinero<Hamburguesa>("Ramon");
             //Alumno - agregar manejadores al cocinero
             this.hamburguesero.OnDemora += this.MostrarConteo;
-            this.hamburguesero.OnIngreso += this.MostrarComida;
+            this.hamburguesero.OnPedido += this.MostrarComida;
         }
 
 
@@ -32,7 +32,7 @@ namespace FrmView
             }
             else
             {
-                this.comidas.Enqueue(comida);
+                this.comida = comida;
                 this.pcbComida.Load(comida.Imagen);
                 this.rchElaborando.Text = comida.ToString();
             }
@@ -57,10 +57,10 @@ namespace FrmView
 
         }
 
-        private void ActualizarAtendidos(IComestible comida)
-        {
-            this.rchFinalizados.Text += "\n" + comida.Ticket;
-        }
+        //private void ActualizarAtendidos(IComestible comida)
+        //{
+        //    this.rchFinalizados.Text += "\n" + comida.Ticket;
+        //}
 
         private void btnAbrir_Click(object sender, EventArgs e)
         {
@@ -79,12 +79,13 @@ namespace FrmView
 
         private void btnSiguiente_Click(object sender, EventArgs e)
         {
-            if (this.comidas.Count > 0)
+            if (comida is not null)
             {
-
-                IComestible comida = this.comidas.Dequeue();
+                IComestible comida = this.comida;
                 comida.FinalizarPreparacion(this.hamburguesero.Nombre);
-                this.ActualizarAtendidos(comida);
+                this.rchFinalizados.Text += "\n" + comida.Ticket;
+                this.comida = null;
+                //this.ActualizarAtendidos(comida);
             }
             else
             {

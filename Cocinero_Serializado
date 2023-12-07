@@ -1,1 +1,1 @@
-{"HabilitarCocina":false,"TiempoMedioDePreparacion":1.5,"Nombre":"Ramon","CantPedidosFinalizados":2}
+{"HabilitarCocina":false,"TiempoMedioDePreparacion":3.75,"Nombre":"Ramon","CantPedidosFinalizados":4,"Pedidos":[{"Ticket":"Hamburguesa Simple\r\nIngredientes: \r\nQUESO\r\nPANCETA\r\n\nTotal a pagar:0","Estado":false,"Imagen":"https://cache-backend-mcd.mcdonaldscupones.com/media/image/product$krX81U77/200/200/original?country=ar"}]}

@@ -30,7 +30,7 @@ namespace Entidades.Modelos
             this.nombre = nombre;
             this.mozo = new Mozo<T>();
             this.pedidos = new Queue<T>();
-            this.OnPedido += this.TomarNuevoPedido;
+            mozo.OnPedido += this.TomarNuevoPedido;
         }
 
         //No hacer nada
@@ -47,11 +47,13 @@ namespace Entidades.Modelos
                 if (value && !this.HabilitarCocina)
                 {
                     this.cancellation = new CancellationTokenSource();
+                    mozo.EmpezarATrabajar = true;
                     this.EmpezarACocinar();
                 }
                 else
                 {
                     this.cancellation.Cancel();
+                    mozo.EmpezarATrabajar = false;
                 }
             }
         }
@@ -60,6 +62,7 @@ namespace Entidades.Modelos
         public double TiempoMedioDePreparacion { get => this.cantPedidosFinalizados == 0 ? 0 : this.demoraPreparacionTotal / this.cantPedidosFinalizados; }
         public string Nombre { get => nombre; }
         public int CantPedidosFinalizados { get => cantPedidosFinalizados; }
+        public Queue<T> Pedidos { get => pedidos;}
 
         private void EmpezarACocinar()
         {
@@ -67,9 +70,9 @@ namespace Entidades.Modelos
             {
                 while (cancellation.IsCancellationRequested.Equals(false))
                 {
-                    if(pedidos.Count > 0)
+                    if(Pedidos.Count > 0)
                     {
-                        this.pedidosEnPreparacion = pedidos.Dequeue();
+                        this.pedidosEnPreparacion = Pedidos.Dequeue();
                         if (OnPedido is not null)
                         {
                             pedidosEnPreparacion.IniciarPreparacion();
@@ -103,7 +106,7 @@ namespace Entidades.Modelos
         {
             if(OnPedido is not null)
             {
-                pedidos.Enqueue(menu);
+                Pedidos.Enqueue(menu);
             }
         }
     }
