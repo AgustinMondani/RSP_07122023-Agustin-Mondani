@@ -7,7 +7,7 @@ using Entidades.Interfaces;
 namespace Entidades.Modelos
 {
     public delegate void DelegadoDemoraAtencion(double demora);
-    public delegate void DelegadoNuevoIngreso(IComestible menu);
+    public delegate void DelegadoNuevoPedido(IComestible menu);
 
     public class Cocinero<T> where T : IComestible, new()
     {
@@ -15,10 +15,12 @@ namespace Entidades.Modelos
         private string nombre;
         private double demoraPreparacionTotal;
         private CancellationTokenSource cancellation;
+        private Mozo<T> mozo;
+        private Queue<T> pedidos;
 
-        private T menu;
+        private T pedidosEnPreparacion;
 
-        public event DelegadoNuevoIngreso OnIngreso;
+        public event DelegadoNuevoPedido OnPedido;
         public event DelegadoDemoraAtencion OnDemora;
 
         private Task tarea;
@@ -26,6 +28,9 @@ namespace Entidades.Modelos
         public Cocinero(string nombre)
         {
             this.nombre = nombre;
+            this.mozo = new Mozo<T>();
+            this.pedidos = new Queue<T>();
+            mozo.OnPedido += this.TomarNuevoPedido;
         }
 
         //No hacer nada
@@ -42,11 +47,13 @@ namespace Entidades.Modelos
                 if (value && !this.HabilitarCocina)
                 {
                     this.cancellation = new CancellationTokenSource();
-                    this.IniciarIngreso();
+                    mozo.EmpezarATrabajar = true;
+                    this.EmpezarACocinar();
                 }
                 else
                 {
                     this.cancellation.Cancel();
+                    mozo.EmpezarATrabajar = false;
                 }
             }
         }
@@ -55,43 +62,51 @@ namespace Entidades.Modelos
         public double TiempoMedioDePreparacion { get => this.cantPedidosFinalizados == 0 ? 0 : this.demoraPreparacionTotal / this.cantPedidosFinalizados; }
         public string Nombre { get => nombre; }
         public int CantPedidosFinalizados { get => cantPedidosFinalizados; }
+        public Queue<T> Pedidos { get => pedidos;}
 
-        private void IniciarIngreso()
+        private void EmpezarACocinar()
         {
             tarea = Task.Run(() =>
             {
                 while (cancellation.IsCancellationRequested.Equals(false))
                 {
-                    NotificarNuevoIngreso();
-                    EsperarProximoIngreso();
-                    cantPedidosFinalizados ++;
-                    DataBaseManager.GuardarTicket<T>(nombre, menu);
+                    if(Pedidos.Count > 0)
+                    {
+                        this.pedidosEnPreparacion = Pedidos.Dequeue();
+                        if (OnPedido is not null)
+                        {
+                            pedidosEnPreparacion.IniciarPreparacion();
+                            OnPedido.Invoke(pedidosEnPreparacion);
+                        }
+                        EsperarProximoIngreso();
+                        cantPedidosFinalizados++;
+                        DataBaseManager.GuardarTicket<T>(nombre, pedidosEnPreparacion);
+                    }
                 }
             }, cancellation.Token);
         }
 
-        private void NotificarNuevoIngreso()
-        {
-            if(OnIngreso is not null)
-            {
-                menu = new T();
-                menu.IniciarPreparacion();
-                OnIngreso.Invoke(menu);
-            }
-        }
         private void EsperarProximoIngreso()
         {
             if (OnDemora is not null)
             {
                 int tiempoEspera = 0;
                 
-                while(!menu.Estado && cancellation.IsCancellationRequested.Equals(false))
+                while(!pedidosEnPreparacion.Estado && cancellation.IsCancellationRequested.Equals(false))
                 {
                     OnDemora.Invoke(tiempoEspera);
                     Thread.Sleep(1000);
                     tiempoEspera++;
                 }
                 demoraPreparacionTotal += tiempoEspera;
+            }
+        }
+
+        private void TomarNuevoPedido(T menu)
+        {
+            if(OnPedido is not null)
+            {
+                Pedidos.Enqueue(menu);
             }
         }
     }
